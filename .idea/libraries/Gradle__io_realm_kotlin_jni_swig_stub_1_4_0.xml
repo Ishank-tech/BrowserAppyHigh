@@ -1,0 +1,13 @@
+<component name="libraryTable">
+  <library name="Gradle: io.realm.kotlin:jni-swig-stub:1.4.0">
+    <CLASSES>
+      <root url="jar://$USER_HOME$/.gradle/caches/modules-2/files-2.1/io.realm.kotlin/jni-swig-stub/1.4.0/3848865cae4acdc5453e9731a76f60bdc431c772/jni-swig-stub-1.4.0.jar!/" />
+    </CLASSES>
+    <JAVADOC>
+      <root url="jar://$USER_HOME$/.gradle/caches/modules-2/files-2.1/io.realm.kotlin/jni-swig-stub/1.4.0/b8f817e03a154ed2585a651ec77a894b3a6c279d/jni-swig-stub-1.4.0-javadoc.jar!/" />
+    </JAVADOC>
+    <SOURCES>
+      <root url="jar://$USER_HOME$/.gradle/caches/modules-2/files-2.1/io.realm.kotlin/jni-swig-stub/1.4.0/ac5484c579a64906611266081224b2a5b9a37ba4/jni-swig-stub-1.4.0-sources.jar!/" />
+    </SOURCES>
+  </library>
+</component>

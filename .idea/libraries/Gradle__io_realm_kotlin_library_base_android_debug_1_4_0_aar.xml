@@ -1,0 +1,14 @@
+<component name="libraryTable">
+  <library name="Gradle: io.realm.kotlin:library-base-android-debug:1.4.0@aar">
+    <CLASSES>
+      <root url="jar://$USER_HOME$/.gradle/caches/transforms-3/c43a3ee1b0fb896ba1bc48a63d135648/transformed/library-base-debug/jars/classes.jar!/" />
+      <root url="file://$USER_HOME$/.gradle/caches/transforms-3/c43a3ee1b0fb896ba1bc48a63d135648/transformed/library-base-debug/AndroidManifest.xml" />
+    </CLASSES>
+    <JAVADOC>
+      <root url="jar://$USER_HOME$/.gradle/caches/modules-2/files-2.1/io.realm.kotlin/library-base-android-debug/1.4.0/792fb7db649e8af9a0ed8074d3179aa5a168a546/library-base-android-debug-1.4.0-javadoc.jar!/" />
+    </JAVADOC>
+    <SOURCES>
+      <root url="jar://$USER_HOME$/.gradle/caches/modules-2/files-2.1/io.realm.kotlin/library-base-android-debug/1.4.0/e7c1367ead4b1db974e8d618027c6ea74b825dd5/library-base-android-debug-1.4.0-sources.jar!/" />
+    </SOURCES>
+  </library>
+</component>
