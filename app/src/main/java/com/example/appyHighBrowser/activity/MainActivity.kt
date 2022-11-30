@@ -38,9 +38,11 @@ import com.example.appyHighBrowser.fragment.BrowseFragment
 import com.example.appyHighBrowser.fragment.HomeFragment
 import com.example.appyHighBrowser.model.Bookmark
 import com.example.appyHighBrowser.model.Tab
+import dagger.hilt.android.AndroidEntryPoint
 import java.io.ByteArrayOutputStream
 import java.util.*
 
+@AndroidEntryPoint
 class MainActivity : AppCompatActivity() {
 
     lateinit var binding: ActivityMainBinding
@@ -178,8 +180,6 @@ class MainActivity : AppCompatActivity() {
                 }
             }
 
-
-
             dialogBinding.backBtn.setOnClickListener {
                 onBackPressed()
             }
@@ -188,7 +188,6 @@ class MainActivity : AppCompatActivity() {
                 val intent = Intent(applicationContext, DownloadActivity::class.java)
                 startActivity(intent)
             }
-
 
             dialogBinding.bookmarkBtn.setOnClickListener {
                 frag?.let {

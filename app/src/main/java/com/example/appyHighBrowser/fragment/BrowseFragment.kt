@@ -11,7 +11,6 @@ import android.net.Uri
 import android.os.Bundle
 import android.os.Environment
 import android.text.SpannableStringBuilder
-import android.util.Log
 import android.view.*
 import android.webkit.*
 import android.widget.Toast
@@ -21,18 +20,22 @@ import com.example.appyHighBrowser.activity.MainActivity
 import com.example.appyHighBrowser.databinding.FragmentBrowseBinding
 import com.example.appyHighBrowser.activity.DownloadActivity
 import com.example.appyHighBrowser.model.DownloadModel
-import io.realm.Realm
+import com.example.appyHighBrowser.room.DownloadDAO
+import dagger.hilt.android.AndroidEntryPoint
+import kotlinx.coroutines.GlobalScope
+import kotlinx.coroutines.launch
 import java.io.ByteArrayOutputStream
+import javax.inject.Inject
 
+@AndroidEntryPoint
 class BrowseFragment(private var urlNew: String) : Fragment() {
 
     lateinit var binding: FragmentBrowseBinding
     var webIcon: Bitmap? = null
     val downloadModel = DownloadModel()
-    val realm by lazy {
-        Realm.getDefaultInstance()
-    }
 
+    @Inject
+    lateinit var downloadDao : DownloadDAO
 
     override fun onCreateView(
         inflater: LayoutInflater,
@@ -173,25 +176,7 @@ class BrowseFragment(private var urlNew: String) : Fragment() {
                 requireActivity().getSystemService(Context.DOWNLOAD_SERVICE) as DownloadManager?
             val downloadID = dm!!.enqueue(request)
             Toast.makeText(context, "Downloading File", Toast.LENGTH_LONG).show()
-            var nextId: Int = 1
-//            val realm = Realm.getDefaultInstance()
-
-            val currentnum: Number? = realm.where(DownloadModel::class.java).max("id")
-
-            nextId = if (currentnum == null) {
-                1
-            } else {
-                currentnum.toInt() + 1
-            }
-            downloadModel.id = nextId.toLong()
-            downloadModel.title = URLUtil.guessFileName(url, contentDisposition, mimeType) + "-"+ nextId.toString()
-            downloadModel.downloadId = downloadID
-            downloadModel.file_path = ""
-            realm.executeTransactionAsync(Realm.Transaction { realm ->
-                realm.copyToRealm(
-                    downloadModel
-                )
-            })
+            saveFileToDataBase(downloadID, url, contentDisposition, mimeType)
             requireActivity().registerReceiver(
                 onDownloadComplete,
                 IntentFilter(DownloadManager.ACTION_DOWNLOAD_COMPLETE)
@@ -200,17 +185,34 @@ class BrowseFragment(private var urlNew: String) : Fragment() {
         })
     }
 
-    fun setChangeItemFilePath(path: String?, id: Long) {
-        realm.executeTransactionAsync(Realm.Transaction { realm ->
-            downloadModel.file_path = path
-            realm.insertOrUpdate(
-                downloadModel
-            )
-            Log.d("debugApp", "setChangeItemFilePath " + path)
-            val intent = Intent(requireActivity(), DownloadActivity::class.java)
-            startActivity(intent)
-        })
+    fun setChangeItemFilePath(path: String?) {
+        downloadModel.file_path = path
+        downloadDao.upsertDownload(downloadModel)
+        val intent = Intent(requireActivity(), DownloadActivity::class.java)
+        startActivity(intent)
+        Toast.makeText(
+            getContext(),
+            "Downloading Complete",
+            Toast.LENGTH_SHORT
+        ).show()
+    }
 
+    private fun saveFileToDataBase(
+        downloadID: Long,
+        url: String,
+        contentDisposition: String,
+        mimeType: String
+    ) {
+        GlobalScope.launch {
+            val currentnum: Number = downloadDao.getAllDownloads().size
+            val nextId = currentnum.toInt() + 1
+            downloadModel.id = nextId
+            downloadModel.title =
+                URLUtil.guessFileName(url, contentDisposition, mimeType)
+            downloadModel.downloadId = downloadID
+            downloadModel.file_path = ""
+            downloadDao.upsertDownload(downloadModel)
+        }
     }
 
     var onDownloadComplete: BroadcastReceiver = object : BroadcastReceiver() {
@@ -227,12 +229,7 @@ class BrowseFragment(private var urlNew: String) : Fragment() {
             cursor?.moveToFirst()
             val downloaded_path =
                 cursor?.getString(cursor.getColumnIndex(DownloadManager.COLUMN_LOCAL_URI))
-            setChangeItemFilePath(downloaded_path, id)
-            Toast.makeText(
-                getContext(),
-                "Downloading Complete",
-                Toast.LENGTH_SHORT
-            ).show()
+            setChangeItemFilePath(downloaded_path)
         }
     }
 

@@ -20,31 +20,31 @@ import com.example.appyHighBrowser.Utils.ClickListener
 import com.example.appyHighBrowser.adapter.DownloadAdapter
 import com.example.appyHighBrowser.model.DownloadModel
 import com.example.appyHighBrowser.Utils.PathUtil
-import io.realm.Realm
-import io.realm.RealmResults
+import com.example.appyHighBrowser.room.DownloadDAO
+import dagger.hilt.android.AndroidEntryPoint
+import kotlinx.coroutines.Dispatchers
+import kotlinx.coroutines.GlobalScope
+import kotlinx.coroutines.launch
 import java.io.File
+import javax.inject.Inject
 
+@AndroidEntryPoint
 class DownloadActivity : AppCompatActivity(), ClickListener {
     var adapter: DownloadAdapter? = null
     var downloadModels: MutableList<DownloadModel> = ArrayList()
-    var realm: Realm? = null
+
+    @Inject
+    lateinit var downloadDao : DownloadDAO
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
         setContentView(R.layout.activity_download)
-        realm = Realm.getDefaultInstance()
+
         val data_list = findViewById<RecyclerView>(R.id.data_list_kt)
-        val downloadModelsLocal: List<DownloadModel> = allDownloads
-        Log.d("debugApp", "prev downloaded files: $downloadModelsLocal")
-        if (downloadModelsLocal != null) {
-            if (downloadModelsLocal.size > 0) {
-                downloadModels.addAll(downloadModelsLocal)
-            }
-        }
-        adapter =
-            DownloadAdapter( downloadModels, this@DownloadActivity)
+        adapter = DownloadAdapter( downloadModels, this@DownloadActivity)
         data_list.layoutManager = LinearLayoutManager(this@DownloadActivity)
         data_list.adapter = adapter
+        getAllDownloadsFromDataBase()
         val intent = intent
         if (intent != null) {
             val action = intent.action
@@ -60,6 +60,18 @@ class DownloadActivity : AppCompatActivity(), ClickListener {
             } else if (Intent.ACTION_SEND_MULTIPLE == action && type != null) {
                 if (type.startsWith("image/")) {
                     handleMultipleImage(intent)
+                }
+            }
+        }
+    }
+
+    private fun getAllDownloadsFromDataBase() {
+        GlobalScope.launch(Dispatchers.IO){
+            val downloadModelsLocal: List<DownloadModel> = getAllDownloads()
+            if (downloadModelsLocal != null) {
+                if (downloadModelsLocal.size > 0) {
+                    downloadModels.addAll(downloadModelsLocal)
+                    adapter?.notifyDataSetChanged()
                 }
             }
         }
@@ -100,11 +112,9 @@ class DownloadActivity : AppCompatActivity(), ClickListener {
         openFile(file_path.toString())
     }
 
-    private val allDownloads: RealmResults<DownloadModel>
-        private get() {
-            val realm = Realm.getDefaultInstance()
-            return realm.where(DownloadModel::class.java).findAll()
-        }
+    private suspend fun getAllDownloads(): List<DownloadModel> {
+        return downloadDao.getAllDownloads()
+    }
 
     private fun requestPermission() {
         if (ActivityCompat.shouldShowRequestPermissionRationale(
